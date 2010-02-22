@@ -34,6 +34,10 @@ module Spec
       @out = ruby(setup + cmd)
     end
 
+    def bundler_lib
+      File.expand_path('../../../vendor/bundler/lib', __FILE__)
+    end
+
     def lib
       File.expand_path('../../../lib', __FILE__)
     end
@@ -54,7 +58,7 @@ module Spec
       ruby, opts = opts, nil unless ruby
       ruby.gsub!(/(?=")/, "\\")
       ruby.gsub!('$', '\\$')
-      out = %x{#{Gem.ruby} -I#{lib} #{opts} -e "#{ruby}"}.strip
+      out = %x{#{Gem.ruby} -I#{bundler_lib} -I#{lib} #{opts} -e "#{ruby}"}.strip
       @exitstatus = $?.exitstatus
       out
     end
