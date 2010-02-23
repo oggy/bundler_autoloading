@@ -7,7 +7,7 @@ when a particular constant is referenced, or method is called.
 
 Example `Gemfile`:
 
-    require 'bundler_autoloading'
+    gem 'bundler_autoloading'
 
     # Load when the Nokogiri constant is referenced:
     gem 'nokogiri', :autoload => 'Nokogiri'
