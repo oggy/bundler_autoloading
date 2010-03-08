@@ -1,6 +1,6 @@
 # Bundler Autoloading
 
-Adds support to [Bundler][bundler] for autoloading gems.
+Adds (limited) support to [Bundler][bundler] for autoloading gems.
 
 Bundler Autoloading lets you tell Bundler to automatically load gems
 when a particular constant is referenced, or method is called.
@@ -34,6 +34,15 @@ lots of gems, many of which you only need a fraction of the time.  For
 example, a large Rails application which loads a whole heap of gems it
 only needs to serve a small number of routes.
 
+## Caveats
+
+Bundler Autoloading does not work with locking.  It will probably
+never support this.
+
+Instead, I am working on a patch to have this functionality properly
+[integrated into Bundler][ticket].  This gem exists as a stopgap for
+developers who don't require locking.
+
 ## Contributing
 
 * Bug reports: http://github.com/oggy/bundler_autoloading/issues
@@ -42,12 +51,9 @@ only needs to serve a small number of routes.
   * Ensure patch includes tests.
   * Leave the version alone, or bump it in a separate commit.
 
-Want this functionality in Bundler itself?  Add your voice
-[here][ticket].  Thanks!
-
 ## Copyright
 
 Copyright (c) 2010 George Ogata. See LICENSE for details.
 
 [bundler]: http://github.com/carlhuda/bundler
-[ticket]: http://github.com/carlhuda/bundler/issues/119
+[ticket]: http://github.com/carlhuda/bundler/issues/137
