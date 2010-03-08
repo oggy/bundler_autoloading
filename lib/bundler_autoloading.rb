@@ -1,13 +1,14 @@
 require 'bundler_autoloading/kernel_mixin'
 require 'bundler_autoloading/dependency_mixin'
+require 'bundler_autoloading/runtime_mixin'
 
 module BundlerAutoloading
   class AutoloadError < Bundler::BundlerError; status_code(8); end
 
   class << self
-    def install_autoloads(autoloads, path, explicit)
+    def install_autoloads(autoloads, path, explicit, gem_name)
       autoloads.each do |specifier|
-        install_autoloader_for(specifier.to_s, path, explicit)
+        install_autoloader_for(specifier.to_s, path, explicit, gem_name)
       end
     end
 
@@ -37,26 +38,37 @@ module BundlerAutoloading
       end
 
       autoloads[specifier] = :loading
-      autorequires.each do |args|
-        autorequire(*args)
+      gem_names = []
+      autorequires.each do |path, explicit, gem_name|
+        gem_names << gem_name unless gem_names.any?{|name| name == gem_name}
+        autorequire(path, explicit)
       end
       autoloads[specifier] = :loaded
+      if @on_autoload_callback
+        gem_names.each{|gem_name| @on_autoload_callback.call(specs[gem_name])}
+      end
       true
     end
 
-    def register_autoload(specifier, path, explicit)
-      autoloads[specifier] << [path, explicit]
+    def register_autoload(specifier, path, explicit, gem_name)
+      autoloads[specifier] << [path, explicit, gem_name]
     end
+
+    def on_autoload(&block)
+      @on_autoload_callback = block
+    end
+
+    attr_accessor :specs
 
     private
 
-    def install_autoloader_for(specifier, path, explicit)
+    def install_autoloader_for(specifier, path, explicit, gem_name)
       if specifier.rindex(/(?:::|[#.])/)
         mod_name, separator, base_name, mod = $`, $&, $'
       else
         mod_name, separator, base_name = 'Object', '::', specifier
       end
-      BundlerAutoloading.register_autoload("#{mod_name}#{separator}#{base_name}", path, explicit)
+      BundlerAutoloading.register_autoload("#{mod_name}#{separator}#{base_name}", path, explicit, gem_name)
       mod = mod_name.split(/::/).inject(Object){|mod, n| mod.const_get(n)}
 
       case separator
@@ -114,3 +126,4 @@ end
 
 Kernel.send :include, BundlerAutoloading::KernelMixin
 Bundler::Dependency.send :include, BundlerAutoloading::DependencyMixin
+Bundler::Runtime.send :include, BundlerAutoloading::RuntimeMixin

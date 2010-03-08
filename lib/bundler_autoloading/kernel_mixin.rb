@@ -9,15 +9,15 @@ module BundlerAutoloading
     # See DependencyMixin for my alibi.
     def require_with_bundler_autoloading(unholy_mess) # :nodoc:
       if unholy_mess.is_a?(Array)
-        autorequire, explicit, autoloads = *unholy_mess
+        autorequire, explicit, autoloads, gem_name = *unholy_mess
 
         if autoloads
           action = lambda do |path, explicit|
-            BundlerAutoloading.install_autoloads(autoloads, path, explicit)
+            BundlerAutoloading.install_autoloads(autoloads, path, explicit, gem_name)
           end
         else
           action = lambda do |path, explicit|
-            BundlerAutoloading.autorequire(path, explicit)
+            BundlerAutoloading.autorequire(path, explicit, gem_name)
           end
         end
 

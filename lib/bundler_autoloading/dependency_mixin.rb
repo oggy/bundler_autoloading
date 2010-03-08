@@ -21,7 +21,7 @@ module BundlerAutoloading
       # gets jammed into Kernel.require, which we mangle so it
       # understands what this unholy mess means.
       @autorequire = [[@autorequire || name, !!@autorequire,
-          autoload ? normalize_autoload(autoload) : nil]]
+          autoload ? normalize_autoload(autoload) : nil, name]]
     end
 
     def normalize_autoload(autoload)

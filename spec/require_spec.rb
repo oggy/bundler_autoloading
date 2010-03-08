@@ -47,6 +47,36 @@ describe "Bundler.require" do
       out.should == "true"
     end
 
+    it "runs the on_autoload callback after autoloading the gem" do
+      build_lib "slow_lib", "1.0.0" do |s|
+        s.write "lib/slow_lib.rb", "module SlowLib; end"
+      end
+
+      gemfile <<-G
+        require 'bundler_autoloading'
+        path "#{lib_path}"
+        gem "slow_lib", :autoload => 'SlowLib'
+      G
+
+      run "BundlerAutoloading.on_autoload{|spec| puts spec.name}; Bundler.require; SlowLib"
+      out.should == "slow_lib"
+    end
+
+    it "does not run the on_autoload callback for gems that are not autoloaded" do
+      build_lib "fast_lib", "1.0.0" do |s|
+        s.write "lib/fast_lib.rb", "module FastLib; end"
+      end
+
+      gemfile <<-G
+        require 'bundler_autoloading'
+        path "#{lib_path}"
+        gem "fast_lib"
+      G
+
+      run "BundlerAutoloading.on_autoload{|spec| puts spec.name}; Bundler.require; FastLib"
+      out.should == ""
+    end
+
     it "accepts a symbol for a constant" do
       build_lib "slow_lib", "1.0.0" do |s|
         s.write "lib/slow_lib.rb", "module OtherName; end"
