@@ -1,7 +1,5 @@
 # Bundler Autoloading
 
-Adds (limited) support to [Bundler][bundler] for autoloading gems.
-
 Bundler Autoloading lets you tell Bundler to automatically load gems
 when a particular constant is referenced, or method is called.  Great
 for speeding up those giant Rails applications!
