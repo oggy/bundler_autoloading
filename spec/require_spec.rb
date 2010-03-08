@@ -1,6 +1,23 @@
 require 'spec_helper'
 
 describe "Bundler.require" do
+  describe "without autoload" do
+    it "should load the gem as normal" do
+      build_lib "slow_lib", "1.0.0" do |s|
+        s.write "lib/slow_lib.rb", "module SlowLib; end"
+      end
+
+      gemfile <<-G
+        require 'bundler_autoloading'
+        path "#{lib_path}"
+        gem "slow_lib"
+      G
+
+      run "Bundler.require; p !!defined?(SlowLib)"
+      out.should == "true"
+    end
+  end
+
   describe "with autoload" do
     it "does not load the gem" do
       build_lib "slow_lib", "1.0.0" do |s|

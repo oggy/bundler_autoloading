@@ -17,7 +17,7 @@ module BundlerAutoloading
           end
         else
           action = lambda do |path, explicit|
-            BundlerAutoloading.autorequire(path, explicit, gem_name)
+            BundlerAutoloading.autorequire(path, explicit)
           end
         end
 
