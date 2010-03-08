@@ -3,11 +3,10 @@
 Adds (limited) support to [Bundler][bundler] for autoloading gems.
 
 Bundler Autoloading lets you tell Bundler to automatically load gems
-when a particular constant is referenced, or method is called.
+when a particular constant is referenced, or method is called.  Great
+for speeding up those giant Rails applications!
 
 Example `Gemfile`:
-
-    gem 'bundler_autoloading'
 
     # Load when the Nokogiri constant is referenced:
     gem 'nokogiri', :autoload => 'Nokogiri'
@@ -27,12 +26,55 @@ If true is given as the value, the autoload constant is inferred:
 
     gem 'rest-client', :autoload => true  # implies 'RestClient'
 
-## Why would I want this?
+## Configuration file
 
-If your application is taking too long to start up, and you're loading
-lots of gems, many of which you only need a fraction of the time.  For
-example, a large Rails application which loads a whole heap of gems it
-only needs to serve a small number of routes.
+Autoloads may be specified via a configuration file, rather than in
+the Gemfile itself.  Keeps your Gemfile mean and lean.
+
+Just before calling `Bundler.setup`:
+
+    # Defaults to "config/bundler_autoloading.yml".
+    Bundler.config_path = 'path/to/config.yml'
+
+In config file:
+
+    sunspot: true
+
+    record_filter:
+      - RecordFilter
+      - ActiveRecord::Base.filter
+      - ActiveRecord::Base.named_filter
+      - ActiveRecord::Base.named_filters
+      - ActiveRecord::Associations::AssociationCollection#filter
+
+## Post-autoload hook
+
+To run a callback after a gem is autoloaded:
+
+    BundlerAutoloading.on_autoload do |spec|
+      ...
+    end
+
+## Rails 2.3
+
+Follow the [usual steps](http://gist.github.com/302406), then change
+`config/preinitializer.rb` to this:
+
+    require "rubygems"
+    require "bundler"
+    require "bundler_autoloading"
+    # Bundler.config_path = 'custom_path.yml'  # defaults to config/bundler_autoloading.yml
+    BundlerAutoloading.on_autoload do |spec|
+      gem_root = spec.full_gem_path
+      if File.exist?((path = "#{gem_root}/init.rb"))
+        load path
+      elsif File.exist?((path = "#{gem_root}/rails/init.rb"))
+        load path
+      end
+    end
+    Bundler.setup
+
+Note that this removes lock support--see below.
 
 ## Caveats
 
