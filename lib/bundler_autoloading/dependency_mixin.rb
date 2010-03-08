@@ -8,7 +8,7 @@ module BundlerAutoloading
     attr_reader :autoload
 
     def initialize_with_bundler_autoloading(name, version, options = {}, &block)
-      autoload = options['autoload']
+      autoload = options['autoload'] || BundlerAutoloading.config[name]
       initialize_without_bundler_autoloading(name, version, options = {}, &block)
 
       # Intuitively, we should just be monkeypatching

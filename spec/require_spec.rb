@@ -399,5 +399,67 @@ describe "Bundler.require" do
       R
       out.should == "WIN"
     end
+
+    it "should use autoloads defined in the config file if not explicitly specified" do
+      build_lib "slow_lib", "1.0.0" do |s|
+        s.write "lib/slow_lib.rb", "module SlowLib; end"
+      end
+
+      gemfile <<-G
+        require 'bundler_autoloading'
+        path "#{lib_path}"
+        gem "slow_lib"
+      G
+
+      write_file 'config/bundler_autoloading.yml', <<-C
+        slow_lib:
+          - SlowLib
+      C
+
+      run <<-C
+        Bundler.require
+        p !!defined?(SlowLib)
+        SlowLib
+        p !!defined?(SlowLib)
+      C
+      out.should == "false\ntrue"
+    end
+
+    it "should allow specifying the config path" do
+      build_lib "slow_lib", "1.0.0" do |s|
+        s.write "lib/slow_lib.rb", "module SlowLib; end"
+      end
+
+      gemfile <<-G
+        require 'bundler_autoloading'
+        path "#{lib_path}"
+        gem "slow_lib"
+      G
+
+      write_file 'custom_path.yml', <<-C
+        slow_lib:
+          - SlowLib
+      C
+
+      @out = ruby <<-C
+        require 'rubygems'
+        require 'bundler'
+        require 'bundler_autoloading'
+        BundlerAutoloading.config_path = 'custom_path.yml'
+        Bundler.setup
+
+        Bundler.require
+        p !!defined?(SlowLib)
+        SlowLib
+        p !!defined?(SlowLib)
+      C
+      out.should == "false\ntrue"
+    end
+  end
+
+  def write_file(path, content)
+    path = bundled_app(path)
+    FileUtils.mkdir_p File.dirname(path)
+    File.open(path, 'w'){|f| f.print content}
   end
 end

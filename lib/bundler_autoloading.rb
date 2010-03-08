@@ -6,6 +6,17 @@ module BundlerAutoloading
   class AutoloadError < Bundler::BundlerError; status_code(8); end
 
   class << self
+    attr_reader :config_path
+
+    def config_path=(config_path)
+      @config_path = config_path
+      @config = nil
+    end
+
+    def config
+      @config ||= File.file?(config_path) ? YAML.load_file(config_path) : {}
+    end
+
     def install_autoloads(autoloads, path, explicit, gem_name)
       autoloads.each do |specifier|
         install_autoloader_for(specifier.to_s, path, explicit, gem_name)
@@ -122,6 +133,8 @@ module BundlerAutoloading
       @autoloads ||= Hash.new{|h,k| h[k] = []}
     end
   end
+
+  self.config_path = 'config/bundler_autoloading.yml'
 end
 
 Kernel.send :include, BundlerAutoloading::KernelMixin
