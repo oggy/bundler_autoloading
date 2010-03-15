@@ -16,6 +16,21 @@ describe "Bundler.require" do
       run "Bundler.require; p !!defined?(SlowLib)"
       out.should == "true"
     end
+
+    it "should not affect the require option" do
+      build_lib "slow_lib", "1.0.0" do |s|
+        s.write "lib/other-name.rb", "module SlowLib; end"
+      end
+
+      gemfile <<-G
+        require 'bundler_autoloading'
+        path "#{lib_path}"
+        gem "slow_lib", :require => 'other-name'
+      G
+
+      run "Bundler.require; p !!defined?(SlowLib)"
+      out.should == "true"
+    end
   end
 
   describe "with autoload" do

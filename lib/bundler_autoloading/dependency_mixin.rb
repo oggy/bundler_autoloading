@@ -9,7 +9,7 @@ module BundlerAutoloading
 
     def initialize_with_bundler_autoloading(name, version, options = {}, &block)
       autoload = options['autoload'] || BundlerAutoloading.config[name]
-      initialize_without_bundler_autoloading(name, version, options = {}, &block)
+      initialize_without_bundler_autoloading(name, version, options, &block)
 
       # Intuitively, we should just be monkeypatching
       # Runtime#autorequires_for_groups and Runtime#require. The only
